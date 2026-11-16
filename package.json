@@ -1,0 +1,31 @@
+{
+  "name": "ladder-plc",
+  "version": "0.1.0",
+  "description": "MCP server, simulator and PLCopen XML exporter for PLC ladder logic",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "ladder-plc-mcp": "dist/server/mcp.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "build:pages": "tsc -p . && node scripts/build-pages.mjs",
+    "preview:pages": "npm run build:pages && node scripts/serve-pages.mjs",
+    "prepare": "tsc -p .",
+    "watch": "tsc -p . --watch",
+    "test": "tsc -p . && node --test dist/test/*.test.js",
+    "mcp": "node dist/server/mcp.js",
+    "web": "node dist/server/web.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "typescript": "^5.9.3"
+  }
+}

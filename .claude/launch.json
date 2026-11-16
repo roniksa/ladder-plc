@@ -1,0 +1,32 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "ladder-simulator",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "dist/server/web.js"
+      ],
+      "port": 4790
+    },
+    {
+      "name": "pages-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "scripts/serve-pages.mjs"
+      ],
+      "port": 4791
+    },
+    {
+      "name": "winder-simulator",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "LADDER_PORT=4792",
+        "node",
+        "dist/server/web.js",
+        "winder.ladder.json"
+      ],
+      "port": 4792
+    }
+  ]
+}

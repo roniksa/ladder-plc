@@ -1,0 +1,234 @@
+{
+  "format": "ladder-plc/1",
+  "name": "Filling Station",
+  "scanMs": 20,
+  "tags": [
+    {
+      "name": "start_pb",
+      "type": "BOOL",
+      "address": "%IX0.0",
+      "comment": "Start pushbutton",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "stop_pb",
+      "type": "BOOL",
+      "address": "%IX0.1",
+      "comment": "Stop pushbutton, wired NC",
+      "fieldContact": "NC"
+    },
+    {
+      "name": "overload_ok",
+      "type": "BOOL",
+      "address": "%IX0.2",
+      "comment": "Motor overload relay, wired NC",
+      "fieldContact": "NC"
+    },
+    {
+      "name": "box_sensor",
+      "type": "BOOL",
+      "address": "%IX0.3",
+      "comment": "Photo-eye: box at fill position",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "reset_pb",
+      "type": "BOOL",
+      "address": "%IX0.4",
+      "comment": "Reset batch counter",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "conveyor",
+      "type": "BOOL",
+      "address": "%QX0.0",
+      "comment": "Conveyor motor contactor"
+    },
+    {
+      "name": "fill_valve",
+      "type": "BOOL",
+      "address": "%QX0.1",
+      "comment": "Fill valve solenoid"
+    },
+    {
+      "name": "batch_lamp",
+      "type": "BOOL",
+      "address": "%QX0.2",
+      "comment": "Batch complete lamp"
+    },
+    {
+      "name": "running",
+      "type": "BOOL",
+      "comment": "System running (sealed in)"
+    },
+    {
+      "name": "box_count",
+      "type": "INT",
+      "comment": "Boxes filled this batch"
+    }
+  ],
+  "rungs": [
+    {
+      "id": "r1",
+      "logic": {
+        "kind": "series",
+        "id": "r1:0",
+        "items": [
+          {
+            "kind": "parallel",
+            "id": "r1:1",
+            "branches": [
+              {
+                "kind": "contact",
+                "id": "r1:2",
+                "tag": "start_pb",
+                "mode": "NO"
+              },
+              {
+                "kind": "contact",
+                "id": "r1:3",
+                "tag": "running",
+                "mode": "NO"
+              }
+            ]
+          },
+          {
+            "kind": "contact",
+            "id": "r1:4",
+            "tag": "stop_pb",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r1:5",
+            "tag": "overload_ok",
+            "mode": "NO"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r1:6",
+          "tag": "running",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Start/stop with seal-in; stop and overload are NC-wired"
+    },
+    {
+      "id": "r2",
+      "logic": {
+        "kind": "series",
+        "id": "r2:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r2:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r2:2",
+            "tag": "box_sensor",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r2:3",
+            "type": "TP",
+            "inputs": {
+              "PT": "T#3s"
+            },
+            "outputs": {},
+            "instance": "T_fill"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r2:4",
+          "tag": "fill_valve",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Fill each arriving box for 3 s"
+    },
+    {
+      "id": "r3",
+      "logic": {
+        "kind": "series",
+        "id": "r3:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r3:1",
+            "tag": "fill_valve",
+            "mode": "N"
+          },
+          {
+            "kind": "block",
+            "id": "r3:2",
+            "type": "CTU",
+            "inputs": {
+              "R": "reset_pb",
+              "PV": "5"
+            },
+            "outputs": {
+              "CV": "box_count"
+            },
+            "instance": "C_batch"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r3:3",
+          "tag": "batch_lamp",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Count filled boxes; lamp after 5"
+    },
+    {
+      "id": "r4",
+      "logic": {
+        "kind": "series",
+        "id": "r4:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r4:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r4:2",
+            "tag": "fill_valve",
+            "mode": "NC"
+          },
+          {
+            "kind": "contact",
+            "id": "r4:3",
+            "tag": "batch_lamp",
+            "mode": "NC"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r4:4",
+          "tag": "conveyor",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Conveyor runs except while filling or when the batch is complete"
+    }
+  ],
+  "description": "Conveyor brings boxes to a fill position; each box is filled for 3 s; a lamp lights after 5 boxes."
+}

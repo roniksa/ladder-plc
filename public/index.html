@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ladder Simulator</title>
+    <meta name="description" content="Build, simulate and export PLC ladder logic (IEC 61131-3, PLCopen XML) in the browser." />
+    <!-- "server": the project is a file behind the local server. The static build for GitHub Pages sets this to "local". -->
+    <meta name="ladder-backend" content="server" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 28 28" aria-hidden="true">
+          <path d="M4 3v22M24 3v22M4 9h7M17 9h7M11 5v8M17 5v8M4 19h6M18 19h6" />
+          <path d="M12 15q-4 4 0 8M16 15q4 4 0 8" />
+        </svg>
+        <div>
+          <h1 id="project-name">Ladder Simulator</h1>
+          <div id="file-path" class="sub"></div>
+        </div>
+      </div>
+      <div class="status">
+        <span id="mode" class="pill">RUN</span>
+        <span id="clock" class="clock"></span>
+      </div>
+      <div class="actions">
+        <span id="local-tools" class="local-tools" hidden>
+          <details id="file-menu" class="menu">
+            <summary class="btn">File</summary>
+            <div class="menu-list">
+              <button id="file-new" type="button">New project</button>
+              <button id="file-open" type="button">Open project file…</button>
+              <button id="file-save" type="button">Save project file</button>
+              <button id="file-demo" type="button">Load the demo project</button>
+            </div>
+          </details>
+          <input id="file-picker" type="file" accept=".json,application/json" hidden />
+          <button id="btn-undo" type="button" title="Undo the last edit" disabled>Undo</button>
+          <button id="btn-redo" type="button" title="Redo" disabled>Redo</button>
+        </span>
+        <button id="btn-run" type="button">Pause</button>
+        <button id="btn-step" type="button" title="Run a single scan">Step</button>
+        <button id="btn-reset" type="button" title="Return every tag, timer and counter to its power-on state">Reset</button>
+        <button id="btn-export" type="button" class="primary" title="Download the project as a PLCopen XML file for a PLC editor">Export PLCopen XML</button>
+      </div>
+    </header>
+    <main>
+      <section id="ladder" aria-label="Ladder diagram"></section>
+      <aside id="panel" aria-label="Tags and devices"></aside>
+    </main>
+    <div id="popover" class="popover" hidden></div>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module" src="web/app.js"></script>
+  </body>
+</html>

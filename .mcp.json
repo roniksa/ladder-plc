@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "ladder-plc": {
+      "command": "node",
+      "args": ["dist/server/mcp.js"]
+    }
+  }
+}

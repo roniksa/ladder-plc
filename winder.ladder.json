@@ -1,0 +1,1498 @@
+{
+  "format": "ladder-plc/1",
+  "name": "Film Winder",
+  "scanMs": 20,
+  "tags": [
+    {
+      "name": "start_pb",
+      "type": "BOOL",
+      "address": "%IX0.0",
+      "comment": "Start pushbutton",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "stop_pb",
+      "type": "BOOL",
+      "address": "%IX0.1",
+      "comment": "Stop pushbutton, wired NC",
+      "fieldContact": "NC"
+    },
+    {
+      "name": "estop_ok",
+      "type": "BOOL",
+      "address": "%IX0.2",
+      "comment": "E-stop relay monitor, 1 = healthy",
+      "fieldContact": "NC"
+    },
+    {
+      "name": "drive_ok",
+      "type": "BOOL",
+      "address": "%IX0.3",
+      "comment": "Spindle drive fault relay, 1 = healthy",
+      "fieldContact": "NC"
+    },
+    {
+      "name": "new_roll_pb",
+      "type": "BOOL",
+      "address": "%IX0.4",
+      "comment": "New core loaded: resets length and diameter",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "fault_reset_pb",
+      "type": "BOOL",
+      "address": "%IX0.5",
+      "comment": "Fault reset pushbutton",
+      "fieldContact": "NO"
+    },
+    {
+      "name": "loadcell_ds",
+      "type": "REAL",
+      "address": "%ID0",
+      "comment": "Load cell, drive side, scaled to N"
+    },
+    {
+      "name": "loadcell_os",
+      "type": "REAL",
+      "address": "%ID1",
+      "comment": "Load cell, operator side, scaled to N"
+    },
+    {
+      "name": "line_speed",
+      "type": "REAL",
+      "address": "%ID2",
+      "comment": "Line speed sensor, scaled to m/min"
+    },
+    {
+      "name": "drive_enable",
+      "type": "BOOL",
+      "address": "%QX0.0",
+      "comment": "Spindle drive enable"
+    },
+    {
+      "name": "run_lamp",
+      "type": "BOOL",
+      "address": "%QX0.1",
+      "comment": "Winder running"
+    },
+    {
+      "name": "fault_lamp",
+      "type": "BOOL",
+      "address": "%QX0.2",
+      "comment": "Fault: web break, over-tension or drive fault"
+    },
+    {
+      "name": "roll_full_lamp",
+      "type": "BOOL",
+      "address": "%QX0.3",
+      "comment": "Roll has reached full diameter"
+    },
+    {
+      "name": "spindle_rpm_cmd",
+      "type": "REAL",
+      "address": "%QD0",
+      "comment": "Spindle speed reference to the drive, rpm"
+    },
+    {
+      "name": "tension_set",
+      "type": "REAL",
+      "comment": "PARAMETER: tension at the core, N",
+      "initial": 100
+    },
+    {
+      "name": "taper_pct",
+      "type": "REAL",
+      "comment": "PARAMETER: tension reduction at full roll, %",
+      "initial": 30
+    },
+    {
+      "name": "core_dia",
+      "type": "REAL",
+      "comment": "PARAMETER: core outside diameter, m",
+      "initial": 0.09000000357627869
+    },
+    {
+      "name": "full_dia",
+      "type": "REAL",
+      "comment": "PARAMETER: full roll diameter, m",
+      "initial": 0.6000000238418579
+    },
+    {
+      "name": "film_thk",
+      "type": "REAL",
+      "comment": "PARAMETER: film thickness, m (50 micron)",
+      "initial": 0.00004999999873689376
+    },
+    {
+      "name": "scan_s",
+      "type": "REAL",
+      "comment": "PARAMETER: task interval in s, must match the cyclic task",
+      "initial": 0.019999999552965164
+    },
+    {
+      "name": "kp",
+      "type": "REAL",
+      "comment": "TUNING: proportional gain, m/min per N",
+      "initial": 0.05000000074505806
+    },
+    {
+      "name": "ki_scan",
+      "type": "REAL",
+      "comment": "TUNING: integral gain per scan, m/min per N",
+      "initial": 0.0020000000949949026
+    },
+    {
+      "name": "trim_max",
+      "type": "REAL",
+      "comment": "PARAMETER: speed trim limit, +/- m/min",
+      "initial": 10
+    },
+    {
+      "name": "rpm_max",
+      "type": "REAL",
+      "comment": "PARAMETER: spindle speed limit, rpm",
+      "initial": 800
+    },
+    {
+      "name": "tension_min",
+      "type": "REAL",
+      "comment": "PARAMETER: web-break threshold, N",
+      "initial": 10
+    },
+    {
+      "name": "tension_max",
+      "type": "REAL",
+      "comment": "PARAMETER: over-tension threshold, N",
+      "initial": 150
+    },
+    {
+      "name": "break_speed",
+      "type": "REAL",
+      "comment": "PARAMETER: web-break check is armed above this line speed, m/min",
+      "initial": 5
+    },
+    {
+      "name": "pi_const",
+      "type": "REAL",
+      "comment": "Constant pi",
+      "initial": 3.1415927410125732
+    },
+    {
+      "name": "running",
+      "type": "BOOL",
+      "comment": "Winder run latch"
+    },
+    {
+      "name": "fault",
+      "type": "BOOL",
+      "comment": "Any fault active"
+    },
+    {
+      "name": "web_break",
+      "type": "BOOL",
+      "comment": "Latched: web moving with no tension"
+    },
+    {
+      "name": "over_tension",
+      "type": "BOOL",
+      "comment": "Latched: tension above the limit"
+    },
+    {
+      "name": "roll_full",
+      "type": "BOOL",
+      "comment": "Diameter has reached full_dia"
+    },
+    {
+      "name": "tension_pv",
+      "type": "REAL",
+      "comment": "Measured web tension, N (sum of both load cells)"
+    },
+    {
+      "name": "tension_sp",
+      "type": "REAL",
+      "comment": "Tapered tension setpoint, N"
+    },
+    {
+      "name": "tension_err",
+      "type": "REAL",
+      "comment": "Setpoint minus measured tension, N"
+    },
+    {
+      "name": "length_m",
+      "type": "REAL",
+      "comment": "Film wound on this roll, whole m"
+    },
+    {
+      "name": "len_frac",
+      "type": "REAL",
+      "comment": "Length not yet counted into length_m, m"
+    },
+    {
+      "name": "len_step",
+      "type": "REAL",
+      "comment": "Film wound in this scan, m"
+    },
+    {
+      "name": "dia",
+      "type": "REAL",
+      "comment": "Calculated roll diameter, m",
+      "initial": 0.09000000357627869
+    },
+    {
+      "name": "dia_sq",
+      "type": "REAL",
+      "comment": "Roll diameter squared, m2"
+    },
+    {
+      "name": "core_sq",
+      "type": "REAL",
+      "comment": "Core diameter squared, m2"
+    },
+    {
+      "name": "dia_tmp",
+      "type": "REAL",
+      "comment": "Working value for the square root"
+    },
+    {
+      "name": "build",
+      "type": "REAL",
+      "comment": "Roll build-up, 0 at the core to 1 at full roll"
+    },
+    {
+      "name": "span",
+      "type": "REAL",
+      "comment": "full_dia minus core_dia, m"
+    },
+    {
+      "name": "taper_drop",
+      "type": "REAL",
+      "comment": "Fraction of tension removed by the taper"
+    },
+    {
+      "name": "taper_factor",
+      "type": "REAL",
+      "comment": "1 at the core, falling to 1 - taper at full roll"
+    },
+    {
+      "name": "i_step",
+      "type": "REAL",
+      "comment": "Integral change in this scan"
+    },
+    {
+      "name": "i_term",
+      "type": "REAL",
+      "comment": "Integral part of the speed trim, m/min"
+    },
+    {
+      "name": "trim",
+      "type": "REAL",
+      "comment": "Speed trim from the tension loop, m/min"
+    },
+    {
+      "name": "trim_min",
+      "type": "REAL",
+      "comment": "Negative trim limit, m/min"
+    },
+    {
+      "name": "surface_ref",
+      "type": "REAL",
+      "comment": "Roll surface speed reference, m/min"
+    },
+    {
+      "name": "circ",
+      "type": "REAL",
+      "comment": "Roll circumference, m"
+    },
+    {
+      "name": "rpm_ref",
+      "type": "REAL",
+      "comment": "Spindle speed before the run interlock, rpm"
+    }
+  ],
+  "rungs": [
+    {
+      "id": "r1",
+      "logic": {
+        "kind": "block",
+        "id": "r1:0",
+        "type": "ADD",
+        "inputs": {
+          "IN1": "loadcell_ds",
+          "IN2": "loadcell_os"
+        },
+        "outputs": {
+          "OUT": "tension_pv"
+        }
+      },
+      "coils": [],
+      "comment": "Web tension = drive-side + operator-side load cell"
+    },
+    {
+      "id": "r2",
+      "logic": {
+        "kind": "series",
+        "id": "r2:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r2:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r2:2",
+            "type": "GT",
+            "inputs": {
+              "IN1": "line_speed",
+              "IN2": "break_speed"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r2:3",
+            "type": "LT",
+            "inputs": {
+              "IN1": "tension_pv",
+              "IN2": "tension_min"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r2:4",
+            "type": "TON",
+            "inputs": {
+              "PT": "T#3s"
+            },
+            "outputs": {},
+            "instance": "T_break"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r2:5",
+          "tag": "web_break",
+          "mode": "set"
+        }
+      ],
+      "comment": "Web break: film moving but no tension for 3 s"
+    },
+    {
+      "id": "r3",
+      "logic": {
+        "kind": "series",
+        "id": "r3:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r3:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r3:2",
+            "type": "GT",
+            "inputs": {
+              "IN1": "tension_pv",
+              "IN2": "tension_max"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r3:3",
+            "type": "TON",
+            "inputs": {
+              "PT": "T#500ms"
+            },
+            "outputs": {},
+            "instance": "T_over"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r3:4",
+          "tag": "over_tension",
+          "mode": "set"
+        }
+      ],
+      "comment": "Over-tension for 0.5 s"
+    },
+    {
+      "id": "r4",
+      "logic": {
+        "kind": "contact",
+        "id": "r4:0",
+        "tag": "fault_reset_pb",
+        "mode": "NO"
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r4:1",
+          "tag": "web_break",
+          "mode": "reset"
+        },
+        {
+          "kind": "coil",
+          "id": "r4:2",
+          "tag": "over_tension",
+          "mode": "reset"
+        }
+      ],
+      "comment": "Fault reset"
+    },
+    {
+      "id": "r5",
+      "logic": {
+        "kind": "parallel",
+        "id": "r5:0",
+        "branches": [
+          {
+            "kind": "contact",
+            "id": "r5:1",
+            "tag": "web_break",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r5:2",
+            "tag": "over_tension",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r5:3",
+            "tag": "drive_ok",
+            "mode": "NC"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r5:4",
+          "tag": "fault",
+          "mode": "normal"
+        },
+        {
+          "kind": "coil",
+          "id": "r5:5",
+          "tag": "fault_lamp",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Any fault stops the winder"
+    },
+    {
+      "id": "r6",
+      "logic": {
+        "kind": "series",
+        "id": "r6:0",
+        "items": [
+          {
+            "kind": "parallel",
+            "id": "r6:1",
+            "branches": [
+              {
+                "kind": "contact",
+                "id": "r6:2",
+                "tag": "start_pb",
+                "mode": "NO"
+              },
+              {
+                "kind": "contact",
+                "id": "r6:3",
+                "tag": "running",
+                "mode": "NO"
+              }
+            ]
+          },
+          {
+            "kind": "contact",
+            "id": "r6:4",
+            "tag": "stop_pb",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r6:5",
+            "tag": "estop_ok",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r6:6",
+            "tag": "fault",
+            "mode": "NC"
+          },
+          {
+            "kind": "contact",
+            "id": "r6:7",
+            "tag": "roll_full",
+            "mode": "NC"
+          }
+        ]
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r6:8",
+          "tag": "running",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Run latch with seal-in; stop, E-stop and drive contacts are NC-wired"
+    },
+    {
+      "id": "r7",
+      "logic": {
+        "kind": "contact",
+        "id": "r7:0",
+        "tag": "running",
+        "mode": "NO"
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r7:1",
+          "tag": "drive_enable",
+          "mode": "normal"
+        },
+        {
+          "kind": "coil",
+          "id": "r7:2",
+          "tag": "run_lamp",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Enable the spindle drive"
+    },
+    {
+      "id": "r8",
+      "logic": {
+        "kind": "series",
+        "id": "r8:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r8:1",
+            "tag": "new_roll_pb",
+            "mode": "NO"
+          },
+          {
+            "kind": "contact",
+            "id": "r8:2",
+            "tag": "running",
+            "mode": "NC"
+          },
+          {
+            "kind": "block",
+            "id": "r8:3",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "0.0"
+            },
+            "outputs": {
+              "OUT": "length_m"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r8:4",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "0.0"
+            },
+            "outputs": {
+              "OUT": "len_frac"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r8:5",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "core_dia"
+            },
+            "outputs": {
+              "OUT": "dia"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "New core: reset wound length and diameter (only while stopped)"
+    },
+    {
+      "id": "r9",
+      "logic": {
+        "kind": "series",
+        "id": "r9:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r9:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r9:2",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "line_speed",
+              "IN2": "scan_s"
+            },
+            "outputs": {
+              "OUT": "len_step"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r9:3",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "len_step",
+              "IN2": "60.0"
+            },
+            "outputs": {
+              "OUT": "len_step"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r9:4",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "len_frac",
+              "IN2": "len_step"
+            },
+            "outputs": {
+              "OUT": "len_frac"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Film wound this scan = line speed x scan time"
+    },
+    {
+      "id": "r10",
+      "logic": {
+        "kind": "series",
+        "id": "r10:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r10:1",
+            "type": "GE",
+            "inputs": {
+              "IN1": "len_frac",
+              "IN2": "1.0"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r10:2",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "len_frac",
+              "IN2": "1.0"
+            },
+            "outputs": {
+              "OUT": "len_frac"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r10:3",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "length_m",
+              "IN2": "1.0"
+            },
+            "outputs": {
+              "OUT": "length_m"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Count whole metres, so the total keeps its precision on a long roll"
+    },
+    {
+      "id": "r11",
+      "logic": {
+        "kind": "series",
+        "id": "r11:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r11:1",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "film_thk",
+              "IN2": "length_m"
+            },
+            "outputs": {
+              "OUT": "dia_sq"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r11:2",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "dia_sq",
+              "IN2": "4.0"
+            },
+            "outputs": {
+              "OUT": "dia_sq"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r11:3",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "dia_sq",
+              "IN2": "pi_const"
+            },
+            "outputs": {
+              "OUT": "dia_sq"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Diameter squared, part 1: 4 x thickness x length / pi"
+    },
+    {
+      "id": "r12",
+      "logic": {
+        "kind": "series",
+        "id": "r12:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r12:1",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "core_dia",
+              "IN2": "core_dia"
+            },
+            "outputs": {
+              "OUT": "core_sq"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r12:2",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "dia_sq",
+              "IN2": "core_sq"
+            },
+            "outputs": {
+              "OUT": "dia_sq"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Diameter squared, part 2: add the core diameter squared"
+    },
+    {
+      "id": "r13",
+      "logic": {
+        "kind": "series",
+        "id": "r13:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r13:1",
+            "type": "LE",
+            "inputs": {
+              "IN1": "dia",
+              "IN2": "0.0"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r13:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "core_dia"
+            },
+            "outputs": {
+              "OUT": "dia"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Guard: the diameter must never be zero"
+    },
+    {
+      "id": "r14",
+      "logic": {
+        "kind": "series",
+        "id": "r14:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r14:1",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "dia_sq",
+              "IN2": "dia"
+            },
+            "outputs": {
+              "OUT": "dia_tmp"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r14:2",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "dia",
+              "IN2": "dia_tmp"
+            },
+            "outputs": {
+              "OUT": "dia_tmp"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r14:3",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "dia_tmp",
+              "IN2": "2.0"
+            },
+            "outputs": {
+              "OUT": "dia"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Square root by one Newton step per scan: dia = (dia + dia_sq / dia) / 2"
+    },
+    {
+      "id": "r15",
+      "logic": {
+        "kind": "block",
+        "id": "r15:0",
+        "type": "GE",
+        "inputs": {
+          "IN1": "dia",
+          "IN2": "full_dia"
+        },
+        "outputs": {}
+      },
+      "coils": [
+        {
+          "kind": "coil",
+          "id": "r15:1",
+          "tag": "roll_full",
+          "mode": "normal"
+        },
+        {
+          "kind": "coil",
+          "id": "r15:2",
+          "tag": "roll_full_lamp",
+          "mode": "normal"
+        }
+      ],
+      "comment": "Roll full: stops the winder until a new core is loaded"
+    },
+    {
+      "id": "r16",
+      "logic": {
+        "kind": "series",
+        "id": "r16:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r16:1",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "dia",
+              "IN2": "core_dia"
+            },
+            "outputs": {
+              "OUT": "build"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r16:2",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "full_dia",
+              "IN2": "core_dia"
+            },
+            "outputs": {
+              "OUT": "span"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r16:3",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "build",
+              "IN2": "span"
+            },
+            "outputs": {
+              "OUT": "build"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Build-up: 0 at the core, 1 at full roll"
+    },
+    {
+      "id": "r17",
+      "logic": {
+        "kind": "series",
+        "id": "r17:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r17:1",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "build",
+              "IN2": "taper_pct"
+            },
+            "outputs": {
+              "OUT": "taper_drop"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r17:2",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "taper_drop",
+              "IN2": "100.0"
+            },
+            "outputs": {
+              "OUT": "taper_drop"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r17:3",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "1.0",
+              "IN2": "taper_drop"
+            },
+            "outputs": {
+              "OUT": "taper_factor"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r17:4",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "tension_set",
+              "IN2": "taper_factor"
+            },
+            "outputs": {
+              "OUT": "tension_sp"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Taper tension: setpoint falls linearly with diameter by taper_pct at full roll"
+    },
+    {
+      "id": "r18",
+      "logic": {
+        "kind": "series",
+        "id": "r18:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r18:1",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "tension_sp",
+              "IN2": "tension_pv"
+            },
+            "outputs": {
+              "OUT": "tension_err"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r18:2",
+            "type": "SUB",
+            "inputs": {
+              "IN1": "0.0",
+              "IN2": "trim_max"
+            },
+            "outputs": {
+              "OUT": "trim_min"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Tension error and the negative trim limit"
+    },
+    {
+      "id": "r19",
+      "logic": {
+        "kind": "series",
+        "id": "r19:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r19:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r19:2",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "tension_err",
+              "IN2": "ki_scan"
+            },
+            "outputs": {
+              "OUT": "i_step"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r19:3",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "i_term",
+              "IN2": "i_step"
+            },
+            "outputs": {
+              "OUT": "i_term"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Tension loop, integral part"
+    },
+    {
+      "id": "r20",
+      "logic": {
+        "kind": "series",
+        "id": "r20:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r20:1",
+            "type": "GT",
+            "inputs": {
+              "IN1": "i_term",
+              "IN2": "trim_max"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r20:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "trim_max"
+            },
+            "outputs": {
+              "OUT": "i_term"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Anti-windup, upper limit"
+    },
+    {
+      "id": "r21",
+      "logic": {
+        "kind": "series",
+        "id": "r21:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r21:1",
+            "type": "LT",
+            "inputs": {
+              "IN1": "i_term",
+              "IN2": "trim_min"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r21:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "trim_min"
+            },
+            "outputs": {
+              "OUT": "i_term"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Anti-windup, lower limit"
+    },
+    {
+      "id": "r22",
+      "logic": {
+        "kind": "series",
+        "id": "r22:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r22:1",
+            "tag": "running",
+            "mode": "NC"
+          },
+          {
+            "kind": "block",
+            "id": "r22:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "0.0"
+            },
+            "outputs": {
+              "OUT": "i_term"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Clear the integral while stopped"
+    },
+    {
+      "id": "r23",
+      "logic": {
+        "kind": "series",
+        "id": "r23:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r23:1",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "tension_err",
+              "IN2": "kp"
+            },
+            "outputs": {
+              "OUT": "trim"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r23:2",
+            "type": "ADD",
+            "inputs": {
+              "IN1": "trim",
+              "IN2": "i_term"
+            },
+            "outputs": {
+              "OUT": "trim"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Speed trim = proportional + integral"
+    },
+    {
+      "id": "r24",
+      "logic": {
+        "kind": "series",
+        "id": "r24:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r24:1",
+            "type": "GT",
+            "inputs": {
+              "IN1": "trim",
+              "IN2": "trim_max"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r24:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "trim_max"
+            },
+            "outputs": {
+              "OUT": "trim"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Trim limit, upper"
+    },
+    {
+      "id": "r25",
+      "logic": {
+        "kind": "series",
+        "id": "r25:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r25:1",
+            "type": "LT",
+            "inputs": {
+              "IN1": "trim",
+              "IN2": "trim_min"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r25:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "trim_min"
+            },
+            "outputs": {
+              "OUT": "trim"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Trim limit, lower"
+    },
+    {
+      "id": "r26",
+      "logic": {
+        "kind": "block",
+        "id": "r26:0",
+        "type": "ADD",
+        "inputs": {
+          "IN1": "line_speed",
+          "IN2": "trim"
+        },
+        "outputs": {
+          "OUT": "surface_ref"
+        }
+      },
+      "coils": [],
+      "comment": "Surface speed = line speed + tension trim (low tension speeds the winder up)"
+    },
+    {
+      "id": "r27",
+      "logic": {
+        "kind": "series",
+        "id": "r27:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r27:1",
+            "type": "LT",
+            "inputs": {
+              "IN1": "surface_ref",
+              "IN2": "0.0"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r27:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "0.0"
+            },
+            "outputs": {
+              "OUT": "surface_ref"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Never run the spindle backwards"
+    },
+    {
+      "id": "r28",
+      "logic": {
+        "kind": "series",
+        "id": "r28:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r28:1",
+            "type": "MUL",
+            "inputs": {
+              "IN1": "dia",
+              "IN2": "pi_const"
+            },
+            "outputs": {
+              "OUT": "circ"
+            }
+          },
+          {
+            "kind": "block",
+            "id": "r28:2",
+            "type": "DIV",
+            "inputs": {
+              "IN1": "surface_ref",
+              "IN2": "circ"
+            },
+            "outputs": {
+              "OUT": "rpm_ref"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Spindle rpm = surface speed / (pi x diameter): slows as the roll builds"
+    },
+    {
+      "id": "r29",
+      "logic": {
+        "kind": "series",
+        "id": "r29:0",
+        "items": [
+          {
+            "kind": "block",
+            "id": "r29:1",
+            "type": "GT",
+            "inputs": {
+              "IN1": "rpm_ref",
+              "IN2": "rpm_max"
+            },
+            "outputs": {}
+          },
+          {
+            "kind": "block",
+            "id": "r29:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "rpm_max"
+            },
+            "outputs": {
+              "OUT": "rpm_ref"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Spindle speed limit"
+    },
+    {
+      "id": "r30",
+      "logic": {
+        "kind": "series",
+        "id": "r30:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r30:1",
+            "tag": "running",
+            "mode": "NO"
+          },
+          {
+            "kind": "block",
+            "id": "r30:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "rpm_ref"
+            },
+            "outputs": {
+              "OUT": "spindle_rpm_cmd"
+            }
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Send the speed reference while running"
+    },
+    {
+      "id": "r31",
+      "logic": {
+        "kind": "series",
+        "id": "r31:0",
+        "items": [
+          {
+            "kind": "contact",
+            "id": "r31:1",
+            "tag": "running",
+            "mode": "NC"
+          },
+          {
+            "kind": "block",
+            "id": "r31:2",
+            "type": "MOVE",
+            "inputs": {
+              "IN": "0.0"
+            },
+            "outputs": {
+              "OUT": "spindle_rpm_cmd"
+            }
+          },
+          {
+            "kind": "parallel",
+            "id": "r31:3",
+            "branches": [
+              {
+                "kind": "contact",
+                "id": "r31:4",
+                "tag": "start_pb",
+                "mode": "NO"
+              },
+              {
+                "kind": "series",
+                "id": "r31:5",
+                "items": [
+                  {
+                    "kind": "contact",
+                    "id": "r31:6",
+                    "tag": "start_pb",
+                    "mode": "NO"
+                  },
+                  {
+                    "kind": "contact",
+                    "id": "r31:7",
+                    "tag": "start_pb",
+                    "mode": "NO"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "coils": [],
+      "comment": "Zero speed reference while stopped"
+    }
+  ],
+  "description": "Center winder for plastic film. Spindle speed follows line speed and roll diameter; a tension loop on the load cells trims it; the tension setpoint tapers as the roll builds."
+}
