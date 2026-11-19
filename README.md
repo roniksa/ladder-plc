@@ -2,6 +2,8 @@
 
 Build PLC ladder logic from a chat interface. An MCP server gives the model tools to declare tags, write rungs, validate, simulate and export; a browser front end shows the ladder with live power flow and lets you operate inputs and edit rungs.
 
+**Try it in the browser: https://roniksa.github.io/ladder-plc/** (editor and simulator; no install, nothing is uploaded)
+
 - **Standard:** IEC 61131-3 ladder diagram (LD)
 - **Export:** PLCopen XML (TC6 v2.01), a complete project with one program, a configuration and a cyclic task
 - **No hardware needed:** the scan-cycle simulator runs the logic in the browser and headlessly for tests
@@ -132,3 +134,7 @@ public       page shell and styles
 - The export validates against the PLCopen TC6 v2.01 schema (the copy shipped with Beremiz), for every supported element kind. It has not yet been imported into a PLC editor, so drawing positions and compiler behaviour there are unconfirmed. To repeat the schema check, point `LADDER_XSD` at a copy of `tc6_xml_v201.xsd` and run `npm test` (needs `xmllint`).
 - Comparison blocks continue the rung from `OUT` with the rung wired to `EN`, which relies on `OUT` being FALSE while `EN` is FALSE (true for OpenPLC's compiler).
 - Simulation is not a safety validation. Emergency stops and guards belong in hardwired or safety-rated circuits, not in this logic.
+
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -2,6 +2,7 @@
   "name": "ladder-plc",
   "version": "0.1.0",
   "description": "MCP server, simulator and PLCopen XML exporter for PLC ladder logic",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "bin": {
@@ -27,5 +28,10 @@
   "devDependencies": {
     "@types/node": "^18.19.130",
     "typescript": "^5.9.3"
+  },
+  "homepage": "https://roniksa.github.io/ladder-plc/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roniksa/ladder-plc.git"
   }
 }
